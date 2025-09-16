@@ -1,29 +1,19 @@
+// index.js
 import express from "express";
 import cors from "cors";
-import { PORT, mongoDBURL } from "./config.js";
 import mongoose from "mongoose";
+
+import { PORT, mongoDBURL } from "./config.js";
 import Book from "./models/bookModel.js";
-import booksRoute from './routes/booksRoute.js';
-import 'dotenv/config';
-
-
+import booksRoute from "./routes/booksRoute.js";
 
 const app = express();
 
-// ✅ Middleware to parse JSON
+// ✅ Middleware
 app.use(express.json());
-
 app.use(cors());
-// app.use(
-//   cors({
-//     origin: 'http://localhost:3000/',
-//     methods: ['GET', 'POST', 'PUT', 'DELETE'],
-//     allowedHeaders: ['Content-Type'],
-//   })
-// );
 
-
-// ✅ Health check route
+// ✅ Health check
 app.get("/", (req, res) => {
   console.log(`Received ${req.method} request for ${req.url}`);
   return res.status(200).json({ message: "Welcome to MERN Stack Tutorial" });
@@ -81,8 +71,6 @@ app.get("/books/:id", async (req, res) => {
   }
 });
 
-
-
 // ✅ Update book by ID
 app.put("/books/:id", async (req, res) => {
   try {
@@ -98,7 +86,7 @@ app.put("/books/:id", async (req, res) => {
     const updatedBook = await Book.findByIdAndUpdate(
       id,
       { title, author, publishYear },
-      { new: true } // return updated doc
+      { new: true }
     );
 
     if (!updatedBook) {
@@ -129,18 +117,23 @@ app.delete("/books/:id", async (req, res) => {
   }
 });
 
-app.use('/books',booksRoute);
+// ✅ Use booksRoute for modular routes
+app.use("/books", booksRoute);
 
-// ✅ MongoDB connection
+// ✅ Connect to MongoDB & start server
 mongoose
-  .connect(mongoDBURL)
+  .connect(mongoDBURL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
   .then(() => {
-    console.log("App connected to database");
+    console.log("✅ Connected to MongoDB");
     app.listen(PORT, () => {
-      console.log(`App is listening on port: ${PORT}`);
+      console.log(`🚀 Server running on port: ${PORT}`);
     });
   })
   .catch((error) => {
-    console.error("Error connecting to database", error);
+    console.error("❌ Error connecting to database", error);
+    process.exit(1);
   });
 
